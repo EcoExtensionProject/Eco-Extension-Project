@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @grant        none
 // @run-at       document-body
+// @updateURL    https://raw.githubusercontent.com/TuUsuario/TuRepo/main/script.js
+// @downloadURL  https://raw.githubusercontent.com/TuUsuario/TuRepo/main/script.js
 // ==/UserScript==
  
 (function () {
