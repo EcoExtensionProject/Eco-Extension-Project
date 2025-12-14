@@ -277,27 +277,33 @@
  
   /* ---------------- DAILY CONTRIBUTIONS ---------------- */
   dailyBtn.onclick = () => { dailyBox.style.display = dailyBox.style.display==="block" ? "none" : "block"; };
+  const dailyText = document.createElement("div");
+  dailyText.style.fontSize = "13px";
+  dailyText.style.marginTop = "6px";
+  dailyText.innerHTML = `
+    These are some small actions you can do to lower the enviromental impact of your daily life.<br><br>
+  `;
   const dailyContributions = [
-    { name: "Recycle everything", points: 10 },
-    { name: "Use public transport", points: 15 },
-    { name: "Do not use AI", points: 15 },
-    { name: "Avoid single-use plastics", points: 25 },
-    { name: "Recycle the cooking oil", points: 15 },
-    { name: "Buy local produce", points: 10 },
-    { name: "Save water", points: 10 },
-    { name: "Reduce meat consume", points: 25 },
-    { name: "Use reusable bags", points: 15 },
-    { name: "Do not use car", points: 20 },
-    { name: "Buy second-hand products", points: 20 },
-    { name: "1 or 2 minutes in the shower", points: 15 },
-    { name: "Buy eco-friendly food", points: 20 },
-    { name: "Send a photo of this extension every week", points: 10 },
-    { name: "Use energy-efficient lighting", points: 10 },
-    { name: "Buy and sell in Wallapop", points: 20 },
-    { name: "Walk or bike short distances", points: 10 },
-    { name: "Do not buy Coca Cola, Nestlé, Pepsico, or Unilever", points: 25 },
-    { name: "Donate every month to an NGO fighting climate change", points: 30 },
-    { name: "Activate this extension every day", points: 20 }
+    { name: "Recycling everything", points: 10 },
+    { name: "Using public transport", points: 15 },
+    { name: "Not using AI", points: 15 },
+    { name: "Avoiding single-use plastics", points: 25 },
+    { name: "Recycling cooking oil", points: 15 },
+    { name: "Buying local produce", points: 10 },
+    { name: "Saving water", points: 10 },
+    { name: "Reducing meat consumption", points: 25 },
+    { name: "Using reusable bags", points: 15 },
+    { name: "Not using your car", points: 20 },
+    { name: "Buying second-hand products", points: 20 },
+    { name: "Spending 1 or 2 minutes in the shower", points: 15 },
+    { name: "Buying eco-friendly food and produce", points: 20 },
+    { name: "Spreading this extension", points: 10 },
+    { name: "Using energy-efficient lighting", points: 10 },
+    { name: "Buying and selling second-hand products", points: 20 },
+    { name: "Walking or going by bike", points: 10 },
+    { name: "Not buying Coca Cola, Nestlé, Pepsico, or Unilever", points: 25 },
+    { name: "Donating every month to an NGO fighting climate change", points: 30 },
+    { name: "Activating this extension every day", points: 20 }
   ];
   const savedChecks = JSON.parse(localStorage.getItem("ecoDaily") || "{}");
   dailyContributions.forEach((item,index)=>{
