@@ -1,236 +1,348 @@
 // ==UserScript==
-// @name         Eco Extension Menu Full Persistent Complete
+// @name         Eco Extension Menu Full (Stable, Complete, Narrow Main & Climate)
 // @namespace    http://tampermonkey.net/
-// @version      3.4
-// @description  Menú eco completo con música, volumen y Nature Decoration persistente
+// @version      4.6
+// @description  Full Eco menu with narrower main and climate menus, scrollable for other menus
 // @match        *://*/*
 // @grant        none
 // @run-at       document-body
 // ==/UserScript==
-
-(function() {
-    if (window.top !== window.self) return;
-    if (document.getElementById("eco-logo")) return;
-
-    // -------------------------
-    // LOGO
-    // -------------------------
-    const logo = document.createElement("img");
-    logo.src = "https://files.catbox.moe/zwid67.png";
-    logo.id = "eco-logo";
-    document.body.appendChild(logo);
-
-    // -------------------------
-    // ESTILOS
-    // -------------------------
-    const style = document.createElement('style');
-    style.textContent = `
-      #eco-logo {position: fixed; bottom: 20px; right: 20px; width: 120px; height: 120px; cursor: pointer; z-index: 999999;}
-      #eco-menu, #nature-menu, #user-menu, #collab-menu {position: fixed; bottom: 160px; right: 20px; width: 260px; background: #eaf7e1; border: 3px solid #4b8f3b; border-radius: 15px; padding: 12px; display: none; z-index: 999999; box-shadow: 0 0 10px rgba(0,0,0,0.2); font-family: Arial, sans-serif;}
-      .menu-inner h2 {margin-top: 0; font-size: 18px; color: #2f6d29; text-align: center;}
-      .menu-inner button {width: 100%; margin: 6px 0; padding: 8px; border: none; border-radius: 8px; background: #c8e6c9; cursor: pointer; font-size: 14px; color: #245c22;}
-      .menu-inner button:hover {background: #a5d6a7;}
-      #eco-alert {position: fixed; font-size: 16px; cursor: pointer; z-index: 1000000; display: none;}
-      #eco-message {position: fixed; background: #fff8d6; border: 2px solid #d4b300; padding: 10px 14px; border-radius: 10px; font-family: Arial, sans-serif; max-width: 250px; display: none; z-index: 1000001; box-shadow: 0 2px 8px rgba(0,0,0,0.2);}
-      #eco-message a {color: #1a5e1a; text-decoration: none; font-weight: bold;}
-      #level-tooltip {position: absolute; top: -60px; left: -10px; width: 230px; background: #fff8d6; border: 2px solid #d4b300; padding: 8px; border-radius: 8px; display: none; font-size: 12px; z-index: 1000002; box-shadow: 0 2px 8px rgba(0,0,0,0.2);}
-      #level-bar {width: 100%; height: 20px; background: #c8e6c9; border-radius: 10px; overflow: hidden;}
-      #level-fill {width: 0%; height: 100%; background: #4b8f3b;}
-      .gmail-small {font-size: 12px; display: block; margin-top: 4px; color:#1a5e1a; text-decoration:none; word-break:break-all;}
-      #volume-range { -webkit-appearance: none; width: 100%; height: 8px; border-radius: 4px; background: #c8e6c9; outline: none; margin-bottom:6px;}
-      #volume-range::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #4b8f3b; cursor: pointer; border: none; }
-      #volume-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #4b8f3b; cursor: pointer; border: none; }
-      #volume-range::-ms-thumb { width: 16px; height: 16px; border-radius: 50%; background: #4b8f3b; cursor: pointer; border: none; }
-    `;
-    document.head.appendChild(style);
-
-    // -------------------------
-    // MENÚS
-    // -------------------------
+ 
+(function () {
+  if (window.top !== window.self) return;
+  if (document.getElementById("eco-logo")) return;
+ 
+  /* ---------------- STATE ---------------- */
+  let points = parseInt(localStorage.getItem("ecoPoints") || "0");
+ 
+  /* ---------------- HELPERS ---------------- */
+  function hideAll() {
+    [mainMenu, natureMenu, userMenu, collabMenu, climateMenu].forEach(m => m.style.display = "none");
+  }
+ 
+  function createMenu(title, backTo = null, minWidth = "300px", maxHeight = "400px") {
     const menu = document.createElement("div");
-    menu.id = "eco-menu";
-    menu.innerHTML = `<div class="menu-inner">
-        <h2>🌿 Eco Extension</h2>
-        <button class="nature-mode-btn">Nature mode</button>
-        <button class="user-info-btn">User info</button>
-        <button class="collab-btn">Collaborate</button>
-        <button>What's climate change?</button>
-        <button>Calendar</button>
-      </div>`;
-    document.body.appendChild(menu);
-
-    const natureMenu = document.createElement("div");
-    natureMenu.id = "nature-menu";
-    natureMenu.innerHTML = `<div class="menu-inner">
-        <h2>🌿 Nature Mode</h2>
-        <button id="music-btn">Music: Off</button>
-        <input type="range" id="volume-range" min="0" max="100" value="100">
-        <button id="decoration-btn" style="margin-top:10px;">Nature decoration: Off</button>
-      </div>`;
-    document.body.appendChild(natureMenu);
-
-    const userMenu = document.createElement("div");
-    userMenu.id = "user-menu";
-    userMenu.innerHTML = `<div class="menu-inner">
-        <h2>User Info</h2>
-        <button id="daily-btn">Daily contributions</button>
-        <div id="level-bar-container" style="margin-top:10px; display:flex; align-items:center; gap:6px;">
-          <span id="level-emoji" style="font-size:22px; cursor:pointer; position:relative;">⚠️</span>
-          <div id="level-bar"><div id="level-fill"></div></div>
-        </div>
-      </div>`;
-    document.body.appendChild(userMenu);
-
-    const collabMenu = document.createElement("div");
-    collabMenu.id = "collab-menu";
-    collabMenu.innerHTML = `<div class="menu-inner">
-        <h2>Collaborate</h2>
-        <div class="collab-text"; div style="color:#245c22;">
-          Write to us at this email if you have suggestions or questions.<br>
-          You can also help by informing us about important climate events so we can share them.
-        </div>
-        <a class="gmail-small" href="https://mail.google.com/mail/?view=cm&fs=1&to=eco.extension.project@gmail.com&su=Suggestion%20for%20Eco%20Extension&body=Hi%2C%20I%20would%20like%20to%20share..." target="_blank">eco.extension.example@gmail.com</a>
-        <button id="donate-btn" style="margin-top:10px;">Donate</button>
-        <div style="font-size:12px; margin-top:4px; color:#245c22;">You can also contribute by making a donation.</div>
-      </div>`;
-    document.body.appendChild(collabMenu);
-
-    // -------------------------
-    // ABRIR/CERRAR MENÚS
-    // -------------------------
-    logo.addEventListener("click", () => {
-        const menus = [menu, natureMenu, userMenu, collabMenu];
-        const anyOpen = menus.some(m => m.style.display === "block");
-        menus.forEach(m => m.style.display="none");
-        if(!anyOpen) menu.style.display="block";
-    });
-    menu.querySelector(".nature-mode-btn").addEventListener("click", () => { menu.style.display="none"; natureMenu.style.display="block"; });
-    menu.querySelector(".user-info-btn").addEventListener("click", () => { menu.style.display="none"; userMenu.style.display="block"; });
-    menu.querySelector(".collab-btn").addEventListener("click", () => { menu.style.display="none"; collabMenu.style.display="block"; });
-
-    // -------------------------
-    // ALERT ICON
-    // -------------------------
-    const alertIcon = document.createElement("div");
-    alertIcon.id = "eco-alert";
-    alertIcon.textContent = "⚠️";
-    document.body.appendChild(alertIcon);
-    const message = document.createElement("div");
-    message.id = "eco-message";
-    message.innerHTML = `<strong>¡Puedes firmar una petición!</strong><br><br><a href="https://es.greenpeace.org/es/" target="_blank">Firmar petición</a>`;
-    document.body.appendChild(message);
-    alertIcon.addEventListener("click", () => {
-        message.style.display = (message.style.display==="none"?"block":"none");
-        const rect = logo.getBoundingClientRect();
-        message.style.left = rect.left + (rect.width/2) - 42 + "px";
-        message.style.top = (rect.top - message.offsetHeight - 10) + "px";
-    });
-    window.addEventListener("keydown", (e) => {
-        if(e.key==="1"){
-            const rect = logo.getBoundingClientRect();
-            alertIcon.style.left = rect.left + (rect.width/2) - 42 + "px";
-            alertIcon.style.top = rect.top + "px";
-            alertIcon.style.display = "block";
-        }
-    });
-
-    // -------------------------
-    // MÚSICA
-    // -------------------------
-    const musicBtn = document.getElementById("music-btn");
-    const volumeRange = document.getElementById("volume-range");
-    const musicList = ["Off","Nature","Lofi","Studying"];
-    let musicIndex=0;
-    const ecoAudio = new Audio();
-    ecoAudio.loop=true;
-    ecoAudio.preload="auto";
-    ecoAudio.crossOrigin="anonymous";
-    const musicURLs = {
-        "Nature":"https://files.catbox.moe/gnwqxq.mp3",
-        "Lofi":"https://files.catbox.moe/k3b0yu.mp3",
-        "Studying":"https://files.catbox.moe/7trf7x.mp3"
-    };
-    function setVolume(val){ ecoAudio.volume = val/100; }
-    volumeRange.addEventListener("input", (e)=>{ setVolume(e.target.value); });
-    musicBtn.addEventListener("click", ()=>{
-        musicIndex = (musicIndex + 1) % musicList.length;
-        const mode = musicList[musicIndex];
-        musicBtn.textContent = "Music: "+mode;
-        if(mode==="Off"){ ecoAudio.pause(); ecoAudio.src=""; return; }
-        ecoAudio.src = musicURLs[mode];
-        if(mode==="Nature") ecoAudio.volume=1.0*volumeRange.value/100;
-        if(mode==="Lofi") ecoAudio.volume=0.25*volumeRange.value/100;
-        if(mode==="Studying") ecoAudio.volume=0.15*volumeRange.value/100;
-        try{ecoAudio.load();}catch(e){}
-        ecoAudio.play().catch(()=>{console.warn("Playback blocked, interact with page to enable");});
-    });
-
-    // -------------------------
-    // DECORATION CON FONDOS PERSISTENTES
-    // -------------------------
-    const decorationBtn = document.getElementById("decoration-btn");
-    const decorationOptions = document.createElement("div");
-    decorationOptions.id="decoration-options";
-    decorationOptions.style.display="none";
-    decorationOptions.style.marginTop="10px";
-    const select = document.createElement("select");
-    select.id="background-select";
-    select.style.width="100%";
-    select.innerHTML = `
-        <option value="none">Default</option>
-        <option value="galaxy">Galaxy</option>
-        <option value="montain">Mountain</option>
-        <option value="lake">Lake</option>
-    `;
-    decorationOptions.appendChild(select);
-    natureMenu.querySelector(".menu-inner").appendChild(decorationOptions);
-
-    let decorationOn = localStorage.getItem("ecoDecorationOn")==="true";
-    let savedBackground = localStorage.getItem("ecoBackground") || "none";
-    decorationBtn.textContent = "Nature decoration: "+(decorationOn?"On":"Off");
-    decorationOptions.style.display = decorationOn ? "block" : "none";
-    select.value = savedBackground;
-
-    function applyBackground(value){
-        let url="";
-        switch(value){
-            case "galaxy": url="https://files.catbox.moe/oy9lnz.jpg"; break;
-            case "montain": url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80"; break;
-            case "lake": url="https://files.catbox.moe/0kdvkl.jpg"; break;
-            case "none": default: url=""; break;
-        }
-        document.body.style.backgroundImage = url ? `url('${url}')` : "";
-        document.body.style.backgroundSize = "cover";
-        document.body.style.backgroundRepeat = "no-repeat";
-        document.body.style.backgroundAttachment = "fixed";
+    menu.className = "eco-menu";
+    menu.style.display = "none";
+    menu.style.minWidth = minWidth;
+    menu.style.maxHeight = maxHeight;
+    menu.style.overflowY = "auto";
+ 
+    const header = document.createElement("div");
+    header.className = "eco-header";
+ 
+    if (backTo) {
+      const back = document.createElement("span");
+      back.textContent = "←";
+      back.className = "eco-back";
+      back.onclick = () => {
+        menu.style.display = "none";
+        backTo.style.display = "block";
+      };
+      header.appendChild(back);
     }
-    if(decorationOn) applyBackground(savedBackground);
-
-    decorationBtn.addEventListener("click", ()=>{
-        decorationOn = !decorationOn;
-        decorationBtn.textContent = "Nature decoration: "+(decorationOn?"On":"Off");
-        decorationOptions.style.display = decorationOn ? "block" : "none";
-        localStorage.setItem("ecoDecorationOn",decorationOn);
-        if(!decorationOn){
-            applyBackground("none");
-            localStorage.setItem("ecoBackground","none");
-        }
-    });
-    select.addEventListener("change", ()=>{
-        if(!decorationOn) return;
-        applyBackground(select.value);
-        localStorage.setItem("ecoBackground",select.value);
-    });
-
-    // -------------------------
-    // LEVEL TOOLTIP
-    // -------------------------
-    const levelEmoji = document.getElementById("level-emoji");
-    const levelTooltip = document.createElement("div");
-    levelTooltip.id="level-tooltip";
-    levelTooltip.textContent="Level 1 ⚠️ - Right now you haven't contributed to the environment. Contribute, do small acts and become eco-friendly.";
-    levelEmoji.appendChild(levelTooltip);
-    levelEmoji.addEventListener("mouseenter", ()=>levelTooltip.style.display="block");
-    levelEmoji.addEventListener("mouseleave", ()=>levelTooltip.style.display="none");
-
+ 
+    const h = document.createElement("h2");
+    h.textContent = title;
+    header.appendChild(h);
+ 
+    menu.appendChild(header);
+    document.body.appendChild(menu);
+    return menu;
+  }
+ 
+  function btn(text, fn) {
+    const b = document.createElement("button");
+    b.textContent = text;
+    b.onclick = fn;
+    return b;
+  }
+ 
+  /* ---------------- LOGO ---------------- */
+  const logo = document.createElement("img");
+  logo.id = "eco-logo";
+  logo.src = "https://files.catbox.moe/zwid67.png";
+  document.body.appendChild(logo);
+ 
+  /* ---------------- STYLES ---------------- */
+  const style = document.createElement("style");
+  style.textContent = `
+  #eco-logo{position:fixed;bottom:20px;right:20px;width:130px;cursor:pointer;z-index:999999}
+  .eco-menu{position:fixed;bottom:170px;right:20px;background:#eaf7e1;
+    border:3px solid #4b8f3b;border-radius:16px;padding:12px;
+    font-family:Arial;z-index:999999;box-shadow:0 5px 15px rgba(0,0,0,.2)}
+  .eco-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .eco-header h2{margin:0;font-size:18px;color:#2f6d29}
+  .eco-back{cursor:pointer;font-size:20px;color:#2f6d29}
+  .eco-menu button{width:100%;margin:6px 0;padding:8px;border:none;
+    border-radius:10px;background:#c8e6c9;color:#245c22;cursor:pointer}
+  .eco-menu button:hover{background:#a5d6a7}
+  #volume-range{-webkit-appearance:none;width:100%;height:8px;border-radius:4px;
+    background:#c8e6c9;outline:none}
+  #volume-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+    border-radius:50%;background:#4b8f3b}
+  #level-bar{flex:1;height:18px;background:#c8e6c9;border-radius:10px;overflow:hidden}
+  #level-fill{height:100%;background:#4b8f3b;width:0%}
+  .gmail-small{font-size:12px;color:#1a5e1a;text-decoration:none;word-break:break-all}
+  .contrib{display:flex;align-items:flex-start;gap:6px;font-size:13px;margin:4px 0; flex-wrap:wrap;}
+  `;
+  document.head.appendChild(style);
+ 
+  /* ---------------- MENUS ---------------- */
+  const mainMenu = createMenu("🌿 Eco Extension", null, "220px", "400px"); // más estrecho
+  const natureMenu = createMenu("Nature Mode", mainMenu);
+  const userMenu = createMenu("User Info", mainMenu);
+  const collabMenu = createMenu("Collaborate", mainMenu);
+  const climateMenu = createMenu("What's Climate Change?", mainMenu, "220px", "300px"); // más estrecho y menos alto
+ 
+  /* ---------------- MAIN MENU ---------------- */
+  const climateBtn = btn("What's climate change?", () => { hideAll(); climateMenu.style.display = "block"; });
+  const collabBtn = btn("Collaborate", () => { hideAll(); collabMenu.style.display = "block"; });
+ 
+  mainMenu.append(
+    btn("Nature mode", () => { hideAll(); natureMenu.style.display = "block"; }),
+    btn("User info", () => { hideAll(); userMenu.style.display = "block"; }),
+    collabBtn,
+    climateBtn,
+    btn("Calendar", () => alert("Calendar coming soon 🌱"))
+  );
+ 
+  logo.onclick = () => {
+    const open = mainMenu.style.display === "block";
+    hideAll();
+    if (!open) mainMenu.style.display = "block";
+  };
+  /* ---------------- NATURE MODE ---------------- */
+  const musicBtn = btn("Music: Off", toggleMusic);
+  const volume = document.createElement("input");
+  volume.type = "range";
+  volume.id = "volume-range";
+  volume.min = 0;
+  volume.max = 100;
+  volume.value = localStorage.getItem("ecoVolume") || 80;
+ 
+  const decoBtn = btn("Nature decoration: Off");
+  const decoBox = document.createElement("div");
+  decoBox.style.display = "none";
+ 
+  const bgSelect = document.createElement("select");
+  bgSelect.innerHTML = `
+    <option value="none">Default</option>
+    <option value="galaxy">Galaxy</option>
+    <option value="mountain">Mountain</option>
+    <option value="lake">Lake</option>
+  `;
+  decoBox.appendChild(bgSelect);
+ 
+  natureMenu.append(musicBtn, volume, decoBtn, decoBox);
+ 
+  /* ---------------- MUSIC ---------------- */
+  const audio = new Audio();
+  audio.loop = true;
+  const tracks = ["Off", "Nature", "Lofi", "Studying"];
+  const urls = {
+    Nature: "https://files.catbox.moe/gnwqxq.mp3",
+    Lofi: "https://files.catbox.moe/k3b0yu.mp3",
+    Studying: "https://files.catbox.moe/7trf7x.mp3"
+  };
+  let musicIndex = 0;
+ 
+  function toggleMusic() {
+    musicIndex = (musicIndex + 1) % tracks.length;
+    const mode = tracks[musicIndex];
+    musicBtn.textContent = "Music: " + mode;
+    if (mode === "Off") { audio.pause(); return; }
+    audio.src = urls[mode];
+    audio.volume = volume.value / 100 * (mode === "Nature" ? 1 : mode === "Lofi" ? 0.25 : 0.15);
+    audio.play().catch(() => {});
+  }
+  volume.oninput = () => { audio.volume = volume.value / 100; localStorage.setItem("ecoVolume", volume.value); };
+ 
+  /* ---------------- DECORATION ---------------- */
+  let decoOn = localStorage.getItem("ecoDeco") === "true";
+  let bg = localStorage.getItem("ecoBg") || "none";
+  decoBtn.textContent = "Nature decoration: " + (decoOn ? "On" : "Off");
+  decoBox.style.display = decoOn ? "block" : "none";
+  bgSelect.value = bg;
+ 
+  function applyBg(val) {
+    const map = {
+      galaxy: "https://files.catbox.moe/oy9lnz.jpg",
+      mountain: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80",
+      lake: "https://files.catbox.moe/0kdvkl.jpg"
+    };
+    document.body.style.background = val === "none" ? "" : `url('${map[val]}') center/cover fixed no-repeat`;
+  }
+  if (decoOn) applyBg(bg);
+ 
+  decoBtn.onclick = () => {
+    decoOn = !decoOn;
+    decoBtn.textContent = "Nature decoration: " + (decoOn ? "On" : "Off");
+    decoBox.style.display = decoOn ? "block" : "none";
+    localStorage.setItem("ecoDeco", decoOn);
+    if (!decoOn) applyBg("none");
+  };
+  bgSelect.onchange = () => { bg = bgSelect.value; applyBg(bg); localStorage.setItem("ecoBg", bg); };
+ 
+  /* ---------------- CLIMATE SUBMENU ---------------- */
+  const climateText = document.createElement("div");
+  climateText.style.fontSize = "13px";
+  climateText.style.marginTop = "6px";
+  climateText.innerHTML = `
+    Climate change refers to long-term shifts in temperatures and weather patterns, mainly caused by human activities like burning fossil fuels.<br><br>
+    <b>Sources:</b><br>
+    <a href="https://www.un.org/en/global-issues/climate-change" target="_blank">UN Climate Change</a><br>
+    <a href="https://climate.nasa.gov/" target="_blank">NASA Climate Change</a>
+  `;
+  climateMenu.append(climateText);
+ 
+  /* ---------------- USER INFO ---------------- */
+  const levelWrap = document.createElement("div");
+  levelWrap.style.display = "flex";
+  levelWrap.style.alignItems = "center";
+  levelWrap.style.gap = "8px";
+ 
+  const levelIcon = document.createElement("span");
+  levelIcon.style.fontSize = "22px";
+ 
+  const levelBar = document.createElement("div");
+  levelBar.id = "level-bar";
+ 
+  const levelFill = document.createElement("div");
+  levelFill.id = "level-fill";
+  levelBar.appendChild(levelFill);
+  levelWrap.append(levelIcon, levelBar);
+ 
+  const dailyBtn = btn("Daily contributions");
+  const dailyBox = document.createElement("div");
+  dailyBox.style.display = "none";
+  dailyBox.style.minWidth = "300px";
+ 
+  userMenu.append(dailyBtn, dailyBox, levelWrap);
+ 
+  /* ---------------- LEVEL SYSTEM ---------------- */
+  const levels = [
+    { min: 0, icon: "⚠️", name: "Beginner", text: "You are starting your eco journey." },
+    { min: 100, icon: "🌱", name: "Eco Starter", text: "Good habits are growing." },
+    { min: 300, icon: "🌿", name: "Green Helper", text: "You actively help the planet." },
+    { min: 600, icon: "🌳", name: "Eco Guardian", text: "You protect nature daily." },
+    { min: 1000, icon: "🌍", name: "Planet Hero", text: "You inspire others to be green." }
+  ];
+ 
+  levelIcon.textContent = "";
+  const levelEmoji = document.createElement("span");
+  levelEmoji.style.fontSize = "22px"; levelEmoji.style.cursor = "pointer";
+  const levelName = document.createElement("span");
+  levelName.style.fontSize = "14px"; levelName.style.marginLeft = "6px";
+  levelIcon.appendChild(levelEmoji); levelIcon.appendChild(levelName);
+ 
+  const levelTooltip = document.createElement("div");
+  levelTooltip.style.position = "absolute";
+  levelTooltip.style.background = "#fff8d6";
+  levelTooltip.style.border = "2px solid #d4b300";
+  levelTooltip.style.padding = "6px 10px";
+  levelTooltip.style.borderRadius = "6px";
+  levelTooltip.style.fontSize = "12px";
+  levelTooltip.style.display = "none";
+  levelTooltip.style.zIndex = "1000000";
+  levelTooltip.style.maxWidth = "220px";
+  levelTooltip.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+  document.body.appendChild(levelTooltip);
+ 
+  levelEmoji.addEventListener("click", () => {
+    const current = getCurrentLevel();
+    levelTooltip.textContent = current.text;
+    const rect = levelEmoji.getBoundingClientRect();
+    levelTooltip.style.left = rect.left + "px";
+    levelTooltip.style.top = rect.top - levelTooltip.offsetHeight - 6 + "px";
+    levelTooltip.style.display = levelTooltip.style.display === "block" ? "none" : "block";
+  });
+  document.addEventListener("click", e => {
+    if(!levelEmoji.contains(e.target) && !levelTooltip.contains(e.target)) levelTooltip.style.display="none";
+  });
+ 
+  function getCurrentLevel() { let current=levels[0]; levels.forEach(l=>{if(points>=l.min) current=l;}); return current; }
+  function updateLevel() {
+    let current = getCurrentLevel();
+    let nextMin = levels.find(l=>l.min>current.min)?.min || (current.min+100);
+    levelEmoji.textContent = current.icon;
+    levelName.textContent = current.name;
+    const pct = Math.min((points-current.min)/(nextMin-current.min)*100,100);
+    levelFill.style.width = pct+"%";
+    localStorage.setItem("ecoPoints", points);
+  }
+  updateLevel();
+ 
+  /* ---------------- DAILY CONTRIBUTIONS ---------------- */
+  dailyBtn.onclick = () => { dailyBox.style.display = dailyBox.style.display==="block" ? "none" : "block"; };
+  const dailyContributions = [
+    { name: "Recycle everything", points: 10 },
+    { name: "Use public transport", points: 15 },
+    { name: "Do not use AI", points: 15 },
+    { name: "Avoid single-use plastics", points: 25 },
+    { name: "Recycle the cooking oil", points: 15 },
+    { name: "Buy local produce", points: 10 },
+    { name: "Save water", points: 10 },
+    { name: "Reduce meat consume", points: 25 },
+    { name: "Use reusable bags", points: 15 },
+    { name: "Do not use car", points: 20 },
+    { name: "Buy second-hand products", points: 20 },
+    { name: "1 or 2 minutes in the shower", points: 15 },
+    { name: "Buy eco-friendly food", points: 20 },
+    { name: "Send a photo of this extension every week", points: 10 },
+    { name: "Use energy-efficient lighting", points: 10 },
+    { name: "Buy and sell in Wallapop", points: 20 },
+    { name: "Walk or bike short distances", points: 10 },
+    { name: "Do not buy Coca Cola, Nestlé, Pepsico, or Unilever", points: 25 },
+    { name: "Donate every month to an NGO fighting climate change", points: 30 },
+    { name: "Activate this extension every day", points: 20 }
+  ];
+  const savedChecks = JSON.parse(localStorage.getItem("ecoDaily") || "{}");
+  dailyContributions.forEach((item,index)=>{
+    const row=document.createElement("label");
+    row.className="contrib";
+    const cb=document.createElement("input");
+    cb.type="checkbox"; cb.checked=savedChecks[index]||false;
+    const txt=document.createElement("span");
+    txt.textContent=`${item.name} (+${item.points}p)`;
+    cb.onchange=()=>{
+      points += cb.checked ? item.points : -item.points;
+      savedChecks[index]=cb.checked;
+      localStorage.setItem("ecoDaily",JSON.stringify(savedChecks));
+      updateLevel();
+    };
+    row.append(cb,txt); dailyBox.appendChild(row);
+  });
+ 
+  /* ---------------- COLLABORATE ---------------- */
+  const collabText = document.createElement("div");
+  collabText.style.fontSize="13px";
+  collabText.innerHTML="Write to us if you have suggestions or climate events to share.<br><br>";
+ 
+  const mail=document.createElement("a");
+  mail.className="gmail-small";
+  mail.href="https://mail.google.com/mail/?view=cm&fs=1&to=eco.extension.example@gmail.com";
+  mail.target="_blank";
+  mail.textContent="eco.extension.project@gmail.com";
+ 
+  const donateBtn=btn("Donate",()=>alert("Donation system coming soon 🌍"));
+  collabMenu.append(collabText, mail, donateBtn);
+/* ---------------- TOGGLE ENTIRE EXTENSION ---------------- */
+let ecoVisible = true; // estado actual
+ 
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ç") {  // detecta la tecla ç
+        ecoVisible = !ecoVisible;
+ 
+        // Logo
+        logo.style.display = ecoVisible ? "block" : "none";
+ 
+        // Todos los menús
+        [mainMenu, natureMenu, userMenu, collabMenu, climateMenu].forEach(menu => {
+            menu.style.display = "none"; // ocultar siempre los menús al esconder
+        });
+    }
+});
+ 
+ 
 })();
