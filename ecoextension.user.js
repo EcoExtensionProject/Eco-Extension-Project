@@ -2,7 +2,7 @@
 // @name         Eco Extension
 // @namespace    http://tampermonkey.net/
 // @version      1.0.1
-// @description  Full Eco menu with narrower main and climate menus, scrollable for other menus
+// @description  Eco extension with full everything
 // @match        *://*/*
 // @grant        none
 // @run-at       document-body
