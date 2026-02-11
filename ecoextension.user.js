@@ -306,9 +306,6 @@
     { name: "Activating this extension every day", points: 20 },
     { name: "Use less planes", points: 30}
   ];
-  const dailyContributionsEspanol = [
-   { name: "Reciclar todo", points: }
-  ]
   const savedChecks = JSON.parse(localStorage.getItem("ecoDaily") || "{}");
   dailyContributions.forEach((item,index)=>{
     const row=document.createElement("label");
