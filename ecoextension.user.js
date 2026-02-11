@@ -302,9 +302,13 @@
     { name: "Buying and selling second-hand products", points: 20 },
     { name: "Walking or going by bike", points: 10 },
     { name: "Not buying Coca Cola, Nestlé, Pepsico, or Unilever", points: 25 },
-    { name: "Donating every month to an NGO fighting climate change", points: 30 },
-    { name: "Activating this extension every day", points: 20 }
+    //{ name: "Donating every month to an NGO fighting climate change", points: 30 },
+    { name: "Activating this extension every day", points: 20 },
+    { name: "Use less planes", points: 30}
   ];
+  const dailyContributionsEspanol = [
+   { name: "Reciclar todo", points: }
+  ]
   const savedChecks = JSON.parse(localStorage.getItem("ecoDaily") || "{}");
   dailyContributions.forEach((item,index)=>{
     const row=document.createElement("label");
@@ -339,7 +343,7 @@
 let ecoVisible = true; // estado actual
  
 document.addEventListener("keydown", (e) => {
-    if (e.key === "ç") {  // detecta la tecla ç
+    if (e.ctrlKey && e.altKey && e.key === "h") {  // detecta la tecla ç
         ecoVisible = !ecoVisible;
  
         // Logo
