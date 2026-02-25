@@ -128,7 +128,7 @@
   decoBox.style.display = "none";
  
   const bgSelect = document.createElement("select");
-  bgSelect. = `
+  bgSelect.innerHTML = `
     <option value="none">Default</option>
     <option value="galaxy">Galaxy</option>
     <option value="mountain">Mountain</option>
@@ -191,7 +191,7 @@
   climateText.style.fontSize = "13px";
   climateText.style.marginTop = "6px";
   climateText.style.color="#2f6d29";
-  climateText. = `
+  climateText.innerHTML = `
     Climate change refers to long-term shifts in temperatures and weather patterns, mainly caused by human activities like burning fossil fuels.<br><br>
     <b>Sources:</b><br>
     <a href="https://www.un.org/en/global-issues/climate-change" target="_blank">UN Climate Change</a><br>
@@ -282,7 +282,7 @@
   dailyText.style.fontSize = "13px";
   dailyText.style.marginTop = "6px";
   dailyText.style.color="#2f6d29";
-  dailyText. = `
+  dailyText.innerHTML = `
     These are some small actions you can do to lower the enviromental impact of your daily life.<br><br>
   `;
   const dailyContributions = [
@@ -328,8 +328,9 @@
   /* ---------------- COLLABORATE ---------------- */
   const collabText = document.createElement("div");
   collabText.style.fontSize="13px";
-  collabText.="Write to us if you have suggestions or climate events to share.<br><br>";
   collabText.style.color="#2f6d29";
+  collabText.innerHTML="Write to us if you have suggestions or climate events to share.<br><br>";
+
   const mail=document.createElement("a");
   mail.className="gmail-small";
   mail.href="https://mail.google.com/mail/?view=cm&fs=1&to=eco.extension.example@gmail.com";
