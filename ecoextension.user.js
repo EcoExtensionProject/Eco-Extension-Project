@@ -6,8 +6,8 @@
 // @match        *://*/*
 // @grant        none
 // @run-at       document-body
-// @updateURL    https://raw.githubusercontent.com/TuUsuario/TuRepo/main/script.js
-// @downloadURL  https://raw.githubusercontent.com/TuUsuario/TuRepo/main/script.js
+// @updateURL    https://github.com/EcoExtensionProject/Eco-Extension-Project/blob/main/ecoextension.user.js
+// @downloadURL  https://github.com/EcoExtensionProject/Eco-Extension-Project/blob/main/ecoextension.user.js
 // ==/UserScript==
  
 (function () {
@@ -91,12 +91,21 @@
   document.head.appendChild(style);
  
   /* ---------------- MENUS ---------------- */
-  const mainMenu = createMenu("🌿 Eco Extension", null, "220px", "400px"); // más estrecho
+  const mainMenu = createMenu("🌿 Eco Extension", null, "300px", "300px");
   const natureMenu = createMenu("Nature Mode", mainMenu);
+  natureMenu.style.width = "150px";
+  natureMenu.style.height = "150px";
   const userMenu = createMenu("User Info", mainMenu);
+  userMenu.style.width = "150px";
+  userMenu.style.height = "150px";
   const collabMenu = createMenu("Collaborate", mainMenu);
-  const climateMenu = createMenu("What's Climate Change?", mainMenu, "220px", "300px"); // más estrecho y menos alto
- 
+  collabMenu.style.width = "150px";
+  collabMenu.style.height = "150px";
+  const climateMenu = createMenu("What's Climate Change?", mainMenu);
+  climateMenu.style.width = "150px";
+  climateMenu.style.height = "150px";
+
+
   /* ---------------- MAIN MENU ---------------- */
   const climateBtn = btn("What's climate change?", () => { hideAll(); climateMenu.style.display = "block"; });
   const collabBtn = btn("Collaborate", () => { hideAll(); collabMenu.style.display = "block"; });
@@ -231,7 +240,7 @@
     { min: 600, icon: "🌳", name: "Eco Guardian", text: "You protect nature daily." },
     { min: 1000, icon: "🌍", name: "Planet Hero", text: "You inspire others to be green." }
   ];
- 
+
   levelIcon.textContent = "";
   const levelEmoji = document.createElement("span");
   levelEmoji.style.fontSize = "22px"; levelEmoji.style.cursor = "pointer";
@@ -313,7 +322,7 @@
     const row=document.createElement("label");
     row.className="contrib";
     const cb=document.createElement("input");
-    cb.type="checkbox"; cb.checked=savedChecks[index]||false;
+    cb.type="checkbox"; cb.checked=savedChecks[index] || false;
     const txt=document.createElement("span");
     txt.textContent=`${item.name} (+${item.points}p)`;
     cb.onchange=()=>{
