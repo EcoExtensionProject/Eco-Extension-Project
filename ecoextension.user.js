@@ -22,7 +22,7 @@
     [mainMenu, natureMenu, userMenu, collabMenu, climateMenu].forEach(m => m.style.display = "none");
   }
  
-  function createMenu(title, backTo = null, minWidth = "300px", maxHeight = "400px") {
+  function createMenu(title, backTo = null, minWidth = "250px", maxWidth = "250px", maxHeight = "400px") {
     const menu = document.createElement("div");
     menu.className = "eco-menu";
     menu.style.display = "none";
@@ -86,24 +86,27 @@
   #level-bar{flex:1;height:18px;background:#c8e6c9;border-radius:10px;overflow:hidden}
   #level-fill{height:100%;background:#4b8f3b;width:0%}
   .gmail-small{font-size:12px;color:#1a5e1a;text-decoration:none;word-break:break-all}
-  .contrib{display:flex;align-items:flex-start;gap:6px;font-size:13px;margin:4px 0; flex-wrap:wrap;}
+  .contrib{color:#2f6d29;display:flex;align-items:flex-start;gap:6px;font-size:13px;margin:4px 0; flex-wrap:wrap;}
   `;
   document.head.appendChild(style);
  
-  /* ---------------- MENUS ---------------- */
-  const mainMenu = createMenu("🌿 Eco Extension", null, "300px", "300px");
+  /* ---------------- MENUS -------------- */
+  const menuHeight = "170px";
+  const menuWidth = "160px";
+  const mainMenu = createMenu("🌿 Eco Extension", null, "250px", "400px");
+  mainMenu.style.width = menuWidth;
   const natureMenu = createMenu("Nature Mode", mainMenu);
-  natureMenu.style.width = "150px";
-  natureMenu.style.height = "150px";
+  natureMenu.style.width = menuWidth;
+  natureMenu.style.height = menuHeight;
   const userMenu = createMenu("User Info", mainMenu);
-  userMenu.style.width = "150px";
-  userMenu.style.height = "150px";
+  userMenu.style.width = menuWidth;
+  userMenu.style.height = menuHeight;
   const collabMenu = createMenu("Collaborate", mainMenu);
-  collabMenu.style.width = "150px";
-  collabMenu.style.height = "150px";
+  collabMenu.style.width = menuWidth;
+  collabMenu.style.height = menuHeight;
   const climateMenu = createMenu("What's Climate Change?", mainMenu);
-  climateMenu.style.width = "150px";
-  climateMenu.style.height = "150px";
+  climateMenu.style.width = menuWidth;
+  climateMenu.style.height = menuHeight;
 
 
   /* ---------------- MAIN MENU ---------------- */
@@ -246,6 +249,7 @@
   levelEmoji.style.fontSize = "22px"; levelEmoji.style.cursor = "pointer";
   const levelName = document.createElement("span");
   levelName.style.fontSize = "14px"; levelName.style.marginLeft = "6px";
+  levelName.style.color = "#2f6d29";
   levelIcon.appendChild(levelEmoji); levelIcon.appendChild(levelName);
  
   const levelTooltip = document.createElement("div");
@@ -259,6 +263,7 @@
   levelTooltip.style.zIndex = "1000000";
   levelTooltip.style.maxWidth = "220px";
   levelTooltip.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+  levelTooltip.style.color = "#2f6d29";
   document.body.appendChild(levelTooltip);
  
   levelEmoji.addEventListener("click", () => {
